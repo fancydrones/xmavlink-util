@@ -5,7 +5,7 @@ defmodule MAVLink.Util.MixProject do
     [
       app: :xmavlink_util,
       version: "0.1.0",
-      elixir: "~> 1.10",
+      elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
@@ -25,7 +25,8 @@ defmodule MAVLink.Util.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xmavlink, "~> 0.1.0"}
+      {:xmavlink, "~> 0.1.0"},
+      {:ex_doc, "~> 0.29.1", only: :dev, runtime: false}
     ]
   end
 
@@ -38,7 +39,7 @@ defmodule MAVLink.Util.MixProject do
 
   defp package() do
     [
-      name: "xmavlink-util",
+      name: "xmavlink_util",
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       exclude_patterns: [".DS_Store"],
       licenses: ["MIT"],
