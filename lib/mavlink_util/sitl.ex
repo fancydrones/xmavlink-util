@@ -1,28 +1,28 @@
-defmodule MAVLink.Util.SITL do
+defmodule XMAVLink.Util.SITL do
   @moduledoc """
   Provide SITL specific support e.g RC channel forwarding
   """
-  
+
   require Logger
-  alias MAVLink.Router, as: MAV
-  alias APM.Message.RcChannelsRaw
-  alias APM.Message.RequestDataStream
-  import MAVLink.Util.FocusManager, only: [focus: 0]
-  
+  alias XMAVLink.Router, as: MAV
+  alias Common.Message.RcChannelsRaw
+  alias Common.Message.RequestDataStream
+  import XMAVLink.Util.FocusManager, only: [focus: 0]
+
   @resend_stream_interval 90
-  
-  
+
+
   def forward_rc(sitl_rc_in_port \\ 5501) do
     with {:ok, {system_id, component_id, mavlink_version}} <- focus() do
       forward_rc(system_id, component_id, mavlink_version, sitl_rc_in_port)
     end
   end
-  
+
   def forward_rc(system_id, component_id, mavlink_version, sitl_rc_in_port) do
     Task.start_link(__MODULE__, :_connect, [system_id, component_id, mavlink_version, sitl_rc_in_port])
   end
-  
-  
+
+
   def _connect(system_id, component_id, mavlink_version, sitl_rc_in_port) do
     with {:ok, socket} <- :gen_udp.open(0, [:binary, ip: {127, 0, 0, 1}]),
          :ok <- MAV.subscribe message: RcChannelsRaw, source_system: system_id, source_component: component_id do
@@ -33,18 +33,18 @@ defmodule MAVLink.Util.SITL do
         Logger.warn("Could not subscribe or open port to forward RC from vehicle #{system_id}.#{component_id}")
     end
   end
-  
+
   def _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, 0) do
     MAV.pack_and_send(%RequestDataStream{
       target_system: system_id,
       target_component: 0,  # APM Planner sends this, doesn't work with real component id
-      req_stream_id: APM.encode(:mav_data_stream_rc_channels, :mav_data_stream), # TODO Not a bitmask, where is clue in MAVlink that this field is related?
+      req_stream_id: Common.encode(:mav_data_stream_rc_channels, :mav_data_stream), # TODO Not a bitmask, where is clue in MAVlink that this field is related?
       req_message_rate: 18,
       start_stop: 1
     }, mavlink_version)
     _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, @resend_stream_interval)
   end
-  
+
   def _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, count) do
     receive do
       %RcChannelsRaw{
@@ -74,5 +74,5 @@ defmodule MAVLink.Util.SITL do
         _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, count - 1)
     end
   end
-  
+
 end

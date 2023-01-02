@@ -1,28 +1,28 @@
-defmodule MAVLink.Util.Arm do
+defmodule XMAVLink.Util.Arm do
   @moduledoc false
-  
+
   @arm_retry_interval 3000
-  
+
   require Logger
-  alias APM.Message.CommandLong
-  alias APM.Message.Heartbeat
-  alias MAVLink.Router, as: MAV
-  import MAVLink.Util.CacheManager, only: [msg: 1]
-  import MAVLink.Util.FocusManager, only: [focus: 0]
-  
-  
+  alias Common.Message.CommandLong
+  alias Common.Message.Heartbeat
+  alias XMAVLink.Router, as: MAV
+  import XMAVLink.Util.CacheManager, only: [msg: 1]
+  import XMAVLink.Util.FocusManager, only: [focus: 0]
+
+
   def arm() do
     with {:ok, {system_id, component_id, mavlink_version}} <- focus() do
       arm(system_id, component_id, mavlink_version)
     end
   end
-  
+
   def arm(system_id, component_id, mavlink_version) do
     with {:ok, _, %Heartbeat{system_status: system_status}}
          when system_status in [:mav_state_standby, :mav_state_active, :mav_state_critical, :mav_state_emergency]
          <- msg Heartbeat do
       MAV.subscribe message: Heartbeat, source_system: system_id
-    
+
       MAV.pack_and_send(%CommandLong{
         command: :mav_cmd_component_arm_disarm,
         confirmation: 1,
@@ -35,7 +35,7 @@ defmodule MAVLink.Util.Arm do
         param7: 0.0,
         target_component: component_id,
         target_system: system_id}, mavlink_version)
-      
+
       receive do
         %Heartbeat{base_mode: base_mode} ->
           cond do
@@ -52,25 +52,25 @@ defmodule MAVLink.Util.Arm do
       end
     else
       %Heartbeat{system_status: invalid_system_status} ->
-        Logger.warn("Cannot arm vehicle #{system_id}.#{component_id}: #{APM.describe invalid_system_status}")
+        Logger.warn("Cannot arm vehicle #{system_id}.#{component_id}: #{Common.describe invalid_system_status}")
         {:error, :cannot_arm_invalid_vehicle_status}
       _ ->
         Logger.warn("Could not determine current status of vehicle #{system_id}.#{component_id}")
         {:error, :could_not_determine_vehicle_status}
     end
   end
-  
-  
-  
+
+
+
   def disarm() do
     with {:ok, {system_id, component_id, mavlink_version}} <- focus() do
       disarm(system_id, component_id, mavlink_version)
     end
   end
-  
+
   def disarm(system_id, component_id, mavlink_version) do
     MAV.subscribe message: Heartbeat, source_system: system_id
-  
+
     MAV.pack_and_send(%CommandLong{
       command: :mav_cmd_component_arm_disarm,
       confirmation: 1,
@@ -83,7 +83,7 @@ defmodule MAVLink.Util.Arm do
       param7: 0.0,
       target_component: component_id,
       target_system: system_id}, mavlink_version)
-    
+
     receive do
       %Heartbeat{base_mode: base_mode} ->
         cond do

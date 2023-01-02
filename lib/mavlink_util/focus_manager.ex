@@ -1,28 +1,28 @@
-defmodule MAVLink.Util.FocusManager do
+defmodule XMAVLink.Util.FocusManager do
   @moduledoc """
   Manage a protected ETS table representing the nominated MAV focus of
   zero or more local PIDs. The API uses this to streamline iex sessions
   by letting the user select a MAV to work with and transparently adding
   {system_id, component_id} tuples to call arguments.
   """
-  
+
   use GenServer
   require Logger
-  
+
   @sessions :sessions
   @systems :systems
 
-  
+
   # API
   def start_link(state, opts \\ []) do
     GenServer.start_link(__MODULE__, state, [{:name, __MODULE__} | opts])
   end
-  
-  
+
+
   def focus() do
     self() |> focus()
   end
-  
+
   def focus(pid) when is_pid(pid) do
     with [{^pid, scid}] <- :ets.lookup(@sessions, pid) do
       if pid == self() do
@@ -37,20 +37,20 @@ defmodule MAVLink.Util.FocusManager do
         {:error, :not_focussed}
     end
   end
-  
+
   def focus(system_id, component_id \\ 1) do
-  {:ok, {system_id, component_id, _}} = GenServer.call(MAVLink.Util.FocusManager, {:focus, {system_id, component_id}})
+  {:ok, {system_id, component_id, _}} = GenServer.call(XMAVLink.Util.FocusManager, {:focus, {system_id, component_id}})
   IEx.configure(default_prompt: "iex(%counter) vehicle #{system_id}.#{component_id}>")  # Only works for single IEx session
   end
-  
-  
+
+
   @impl true
   def init(_opts) do
     :ets.new(@sessions, [:named_table, :protected, {:read_concurrency, true}, :set])
     {:ok,%{}}
   end
 
-  
+
   @impl true
   def handle_call({:focus, scid={system_id, component_id}}, {caller_pid, _}, state) do
     with mavlink_major_version when is_number(mavlink_major_version) <-
@@ -75,11 +75,11 @@ defmodule MAVLink.Util.FocusManager do
       _ -> {:reply, {:error, :no_mav_data}, state}
     end
   end
-  
-  
+
+
   #TODO handle DOWN messages
-  
+
   defp format({s, c, _}), do: format({s, c})
   defp format({s, c}), do: "#{s}.#{c}"
-  
+
 end

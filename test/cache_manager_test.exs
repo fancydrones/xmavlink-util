@@ -1,6 +1,6 @@
-defmodule MAVLink.Util.CacheManager.Test do
+defmodule XMAVLink.Util.CacheManager.Test do
   use ExUnit.Case
-  alias MAVLink.Util.CacheManager
+  alias XMAVLink.Util.CacheManager
   #doctest CacheManager
 
   test "greets the world" do

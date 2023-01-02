@@ -1,10 +1,10 @@
-defmodule MAVLink.Util.MixProject do
+defmodule XMAVLink.Util.MixProject do
   use Mix.Project
 
   def project do
     [
       app: :xmavlink_util,
-      version: "0.1.0",
+      version: "0.3.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -17,7 +17,7 @@ defmodule MAVLink.Util.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {MAVLink.Util.Application, []},
+      mod: {XMAVLink.Util.Application, []},
       extra_applications: [:xmavlink, :logger]
     ]
   end
@@ -25,7 +25,7 @@ defmodule MAVLink.Util.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xmavlink, "~> 0.1.0"},
+      {:xmavlink, "~> 0.3.0"},
       {:ex_doc, "~> 0.29.1", only: :dev, runtime: false}
     ]
   end
