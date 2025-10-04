@@ -4,13 +4,13 @@ defmodule XMAVLink.Util.MixProject do
   def project do
     [
       app: :xmavlink_util,
-      version: "0.4.0",
+      version: "0.4.1",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
-      source_url: "https://github.com/fancydrones/xmavlink-util",
+      source_url: "https://github.com/fancydrones/xmavlink-util"
     ]
   end
 
@@ -25,8 +25,8 @@ defmodule XMAVLink.Util.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xmavlink, "~> 0.4.0"},
-      {:ex_doc, "~> 0.29.1", only: :dev, runtime: false}
+      {:xmavlink, "~> 0.4.1"},
+      {:ex_doc, "~> 0.38.4", only: :dev, runtime: false}
     ]
   end
 
