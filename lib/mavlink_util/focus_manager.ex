@@ -12,12 +12,10 @@ defmodule XMAVLink.Util.FocusManager do
   @sessions :sessions
   @systems :systems
 
-
   # API
   def start_link(state, opts \\ []) do
     GenServer.start_link(__MODULE__, state, [{:name, __MODULE__} | opts])
   end
-
 
   def focus() do
     self() |> focus()
@@ -26,49 +24,54 @@ defmodule XMAVLink.Util.FocusManager do
   def focus(pid) when is_pid(pid) do
     with [{^pid, scid}] <- :ets.lookup(@sessions, pid) do
       if pid == self() do
-        Logger.info("Vehicle #{format scid}")
+        Logger.info("Vehicle #{format(scid)}")
       else
-        Logger.info("Vehicle #{format scid} for #{inspect pid}")
+        Logger.info("Vehicle #{format(scid)} for #{inspect(pid)}")
       end
+
       {:ok, scid}
     else
       _ ->
-        Logger.warning("#{inspect pid} has no vehicle focus")
+        Logger.warning("#{inspect(pid)} has no vehicle focus")
         {:error, :not_focussed}
     end
   end
 
   def focus(system_id, component_id \\ 1) do
-  {:ok, {system_id, component_id, _}} = GenServer.call(XMAVLink.Util.FocusManager, {:focus, {system_id, component_id}})
-  IEx.configure(default_prompt: "iex(%counter) vehicle #{system_id}.#{component_id}>")  # Only works for single IEx session
-  end
+    {:ok, {system_id, component_id, _}} =
+      GenServer.call(XMAVLink.Util.FocusManager, {:focus, {system_id, component_id}})
 
+    # Only works for single IEx session
+    IEx.configure(default_prompt: "iex(%counter) vehicle #{system_id}.#{component_id}>")
+  end
 
   @impl true
   def init(_opts) do
     :ets.new(@sessions, [:named_table, :protected, {:read_concurrency, true}, :set])
-    {:ok,%{}}
+    {:ok, %{}}
   end
 
-
   @impl true
-  def handle_call({:focus, scid={system_id, component_id}}, {caller_pid, _}, state) do
+  def handle_call({:focus, scid = {system_id, component_id}}, {caller_pid, _}, state) do
     with mavlink_major_version when is_number(mavlink_major_version) <-
            :ets.foldl(
-             fn ({next_scid, %{mavlink_major_version: mmv}}, acc) ->
-               if next_scid==scid do
+             fn {next_scid, %{mavlink_major_version: mmv}}, acc ->
+               if next_scid == scid do
                  mmv
                else
                  acc
                end
-             end, 0, @systems) do
+             end,
+             0,
+             @systems
+           ) do
       if mavlink_major_version > 0 do
         :ets.insert(@sessions, {caller_pid, {system_id, component_id, mavlink_major_version}})
         Process.monitor(caller_pid)
-        Logger.info("Set focus to #{format scid}")
+        Logger.info("Set focus to #{format(scid)}")
         {:reply, {:ok, {system_id, component_id, mavlink_major_version}}, state}
       else
-        Logger.warning("No such vehicle #{format scid}")
+        Logger.warning("No such vehicle #{format(scid)}")
         {:reply, {:error, :no_such_mav}, state}
       end
     else
@@ -76,10 +79,8 @@ defmodule XMAVLink.Util.FocusManager do
     end
   end
 
-
-  #TODO handle DOWN messages
+  # TODO handle DOWN messages
 
   defp format({s, c, _}), do: format({s, c})
   defp format({s, c}), do: "#{s}.#{c}"
-
 end

@@ -11,7 +11,6 @@ defmodule XMAVLink.Util.SITL do
 
   @resend_stream_interval 90
 
-
   def forward_rc(sitl_rc_in_port \\ 5501) do
     with {:ok, {system_id, component_id, mavlink_version}} <- focus() do
       forward_rc(system_id, component_id, mavlink_version, sitl_rc_in_port)
@@ -19,30 +18,57 @@ defmodule XMAVLink.Util.SITL do
   end
 
   def forward_rc(system_id, component_id, mavlink_version, sitl_rc_in_port) do
-    Task.start_link(__MODULE__, :_connect, [system_id, component_id, mavlink_version, sitl_rc_in_port])
+    Task.start_link(__MODULE__, :_connect, [
+      system_id,
+      component_id,
+      mavlink_version,
+      sitl_rc_in_port
+    ])
   end
-
 
   def _connect(system_id, component_id, mavlink_version, sitl_rc_in_port) do
     with {:ok, socket} <- :gen_udp.open(0, [:binary, ip: {127, 0, 0, 1}]),
-         :ok <- MAV.subscribe message: RcChannelsRaw, source_system: system_id, source_component: component_id do
-      Logger.info("Start forwarding RC from vehicle #{system_id}.#{component_id} to SITL rc-in port #{sitl_rc_in_port}}")
+         :ok <-
+           MAV.subscribe(
+             message: RcChannelsRaw,
+             source_system: system_id,
+             source_component: component_id
+           ) do
+      Logger.info(
+        "Start forwarding RC from vehicle #{system_id}.#{component_id} to SITL rc-in port #{sitl_rc_in_port}}"
+      )
+
       _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, 0)
     else
       _ ->
-        Logger.warning("Could not subscribe or open port to forward RC from vehicle #{system_id}.#{component_id}")
+        Logger.warning(
+          "Could not subscribe or open port to forward RC from vehicle #{system_id}.#{component_id}"
+        )
     end
   end
 
   def _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, 0) do
-    MAV.pack_and_send(%RequestDataStream{
-      target_system: system_id,
-      target_component: 0,  # APM Planner sends this, doesn't work with real component id
-      req_stream_id: Common.encode(:mav_data_stream_rc_channels, :mav_data_stream), # TODO Not a bitmask, where is clue in MAVlink that this field is related?
-      req_message_rate: 18,
-      start_stop: 1
-    }, mavlink_version)
-    _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, @resend_stream_interval)
+    MAV.pack_and_send(
+      %RequestDataStream{
+        target_system: system_id,
+        # APM Planner sends this, doesn't work with real component id
+        target_component: 0,
+        # TODO Not a bitmask, where is clue in MAVlink that this field is related?
+        req_stream_id: Common.encode(:mav_data_stream_rc_channels, :mav_data_stream),
+        req_message_rate: 18,
+        start_stop: 1
+      },
+      mavlink_version
+    )
+
+    _forward(
+      system_id,
+      component_id,
+      mavlink_version,
+      sitl_rc_in_port,
+      socket,
+      @resend_stream_interval
+    )
   end
 
   def _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, count) do
@@ -59,7 +85,8 @@ defmodule XMAVLink.Util.SITL do
       } ->
         :gen_udp.send(
           socket,
-          {127, 0, 0, 1}, # TODO accept destination IP as parameter
+          # TODO accept destination IP as parameter
+          {127, 0, 0, 1},
           sitl_rc_in_port,
           <<
             c1::little-unsigned-integer-size(16),
@@ -70,9 +97,10 @@ defmodule XMAVLink.Util.SITL do
             c6::little-unsigned-integer-size(16),
             c7::little-unsigned-integer-size(16),
             c8::little-unsigned-integer-size(16)
-          >>)
+          >>
+        )
+
         _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, count - 1)
     end
   end
-
 end
