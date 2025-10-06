@@ -33,7 +33,7 @@ defmodule XMAVLink.Util.FocusManager do
       {:ok, scid}
     else
       _ ->
-        Logger.warn("#{inspect pid} has no vehicle focus")
+        Logger.warning("#{inspect pid} has no vehicle focus")
         {:error, :not_focussed}
     end
   end
@@ -68,7 +68,7 @@ defmodule XMAVLink.Util.FocusManager do
         Logger.info("Set focus to #{format scid}")
         {:reply, {:ok, {system_id, component_id, mavlink_major_version}}, state}
       else
-        Logger.warn("No such vehicle #{format scid}")
+        Logger.warning("No such vehicle #{format scid}")
         {:reply, {:error, :no_such_mav}, state}
       end
     else

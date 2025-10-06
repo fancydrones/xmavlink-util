@@ -30,7 +30,7 @@ defmodule XMAVLink.Util.SITL do
       _forward(system_id, component_id, mavlink_version, sitl_rc_in_port, socket, 0)
     else
       _ ->
-        Logger.warn("Could not subscribe or open port to forward RC from vehicle #{system_id}.#{component_id}")
+        Logger.warning("Could not subscribe or open port to forward RC from vehicle #{system_id}.#{component_id}")
     end
   end
 

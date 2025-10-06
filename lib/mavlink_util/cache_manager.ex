@@ -76,7 +76,7 @@ defmodule XMAVLink.Util.CacheManager do
       {:ok, now() - received, message}
     else
       _ ->
-        Logger.warn("Error attempting to retrieve message of type \"#{dequalify_msg_type msg_type}\"")
+        Logger.warning("Error attempting to retrieve message of type \"#{dequalify_msg_type msg_type}\"")
         {:error, :no_such_message}
     end
   end
@@ -116,7 +116,7 @@ defmodule XMAVLink.Util.CacheManager do
       {:ok, param_map}
     else
       _ ->
-        Logger.warn("Error attempting to query params matching \"#{match}\"")
+        Logger.warning("Error attempting to query params matching \"#{match}\"")
         {:error, :query_failed}
     end
   end

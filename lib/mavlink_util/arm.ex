@@ -52,10 +52,10 @@ defmodule XMAVLink.Util.Arm do
       end
     else
       %Heartbeat{system_status: invalid_system_status} ->
-        Logger.warn("Cannot arm vehicle #{system_id}.#{component_id}: #{Common.describe invalid_system_status}")
+        Logger.warning("Cannot arm vehicle #{system_id}.#{component_id}: #{Common.describe invalid_system_status}")
         {:error, :cannot_arm_invalid_vehicle_status}
       _ ->
-        Logger.warn("Could not determine current status of vehicle #{system_id}.#{component_id}")
+        Logger.warning("Could not determine current status of vehicle #{system_id}.#{component_id}")
         {:error, :could_not_determine_vehicle_status}
     end
   end
