@@ -4,7 +4,7 @@ defmodule XMAVLink.Util.MixProject do
   def project do
     [
       app: :xmavlink_util,
-      version: "0.4.2",
+      version: "0.4.3",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -25,7 +25,7 @@ defmodule XMAVLink.Util.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xmavlink, "~> 0.4.1"},
+      {:xmavlink, "~> 0.4.3"},
       {:ex_doc, "~> 0.38.4", only: :dev, runtime: false}
     ]
   end
