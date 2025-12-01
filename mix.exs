@@ -26,7 +26,7 @@ defmodule XMAVLink.Util.MixProject do
   defp deps do
     [
       {:xmavlink, "~> 0.4.3"},
-      {:ex_doc, "~> 0.38.4", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.39.1", only: :dev, runtime: false}
     ]
   end
 
