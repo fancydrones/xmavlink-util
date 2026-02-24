@@ -25,8 +25,8 @@ defmodule XMAVLink.Util.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:xmavlink, "~> 0.4.3"},
-      {:ex_doc, "~> 0.38.4", only: :dev, runtime: false}
+      {:xmavlink, "~> 0.5.0"},
+      {:ex_doc, "~> 0.40.0", only: :dev, runtime: false}
     ]
   end
 
